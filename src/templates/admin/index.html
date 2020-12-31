@@ -1,0 +1,62 @@
+<h1 style="margin-top: 100px">Site Administration</h1>
+<div class="row">
+    <!-- CONTAINER FOR INSTRUCTIONS -->
+    <div class="col-md-3" role="main">
+        <!-- Nav tabs -->
+        <ul class="nav nav-pills nav-stacked" role="tablist">
+        
+            <li role="presentation" class="active">
+                <a href="#people" aria-controls="people" role="tab" data-toggle="tab">People</a>
+            </li>
+            <li role="presentation">
+                <a href="#excel-reports" aria-controls="excel-reports" role="tab" data-toggle="tab">Excel Reports</a>
+            </li>
+            <li role="presentation">
+                <a href="#load_files" aria-controls="load_files" role="tab" data-toggle="tab">Load Files</a>
+            </li>
+            <li role="presentation">
+                <a href="#apv_match" aria-controls="apv_match" role="tab" data-toggle="tab">Vendor / AP - Match</a>
+            </li>
+            <li role="presentation">
+                <a href="#family_code" aria-controls="family_code" role="tab" data-toggle="tab">Family Codes</a>
+            </li>
+            <li role="presentation">
+                <a href="#payee_scrub" aria-controls="payee_scrub" role="tab" data-toggle="tab">Payee - Scrub</a>
+            </li>
+            <li role="presentation">
+                <a href="#create_vendor" aria-controls="create_vendor" role="tab" data-toggle="tab">PR - Create</a>
+            </li>
+            <li role="presentation">
+                <a href="#nce_fml" aria-controls="nce_fml" role="tab" data-toggle="tab">Non-Compass Entities</a>
+            </li>            
+        </ul>
+    </div>
+    <!-- CONTAINER FOR TATTLER TABLE-->
+    <div class="col-md-8">
+        <!-- Tab panes -->
+        <div class="tab-content">
+            <div role="tabpanel" class="tab-pane active" id="vendor_search">
+                {{> vendor_search}}
+            </div>
+            <div role="tabpanel" class="tab-pane" id="create_vendor">
+                {{> create_vendor}}
+            </div>
+            <div role="tabpanel" class="tab-pane" id="apv_match">
+                {{> apv_match}}
+            </div>
+            <div role="tabpanel" class="tab-pane" id="load_files"></div>
+            <div role="tabpanel" class="tab-pane" id="excel-reports">
+                {{> excel_reports}}
+            </div>
+            <div role="tabpanel" class="tab-pane" id="payee_scrub">
+                {{> payee_scrub}}
+            </div>
+            <div role="tabpanel" class="tab-pane" id="family_code">
+                {{> fcodes}}
+            </div>
+            <div role="tabpanel" class="tab-pane" id="nce_fml">
+                {{> fml_nce}}
+            </div>
+        </div>
+    </div>
+</div>
