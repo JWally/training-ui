@@ -11,12 +11,12 @@
 <tbody>
 	{{#data}}
 		<tr>
-			<td style="text-align: center;">{{id}}</td>
+			<td style="text-align: center;">{{_id}}</td>
 			<td style="text-align: left;">{{name}}</td>
 			<td style="text-align: left;">{{#due}}{{due}}{{/due}}{{^due}}N/A{{/due}}</td>
 			<td style="text-align: left;">
 				<label class="switch">
-					<input {{checked}} onchange="markCourse(event, this)" id="course-{{id}}" type="checkbox" />
+					<input {{status}} onchange="markCourse(event, this)" id="course-{{_id}}" type="checkbox" />
 					<span class="slider"></span>
 				</label>
 			</td>

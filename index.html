@@ -34,9 +34,6 @@
 
 	<!-- Latest compiled and minified JavaScript -->
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-
-	<!-- This library lets us render text-templates into HTML -->
-	<script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
 	
 	<!-- FUN LIBARY TO ROUTE SHIT AND WHATS NOT! -->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/page.js/1.11.6/page.js"></script>
@@ -44,14 +41,84 @@
 	<!-- This is how we access each of our templates. It exposes an ugly global called "templates" -->
 	<script src="/training/src/templates.js"></script>
 	
-	<script src="/training/src/test.js" type="module"></script>	
-	
-	
 	<script src="http://twitter.github.com/hogan.js/builds/3.0.1/hogan-3.0.1.js"></script>
 
 	<!-- Figure out the state of the user, and render appropriately... -->
 	<script>
 	
+	
+	//
+	// TODO:
+	// This whole thing wreaks of code stink...
+	// Please to clean up
+	//
+	
+	
+		page.base("/training");
+		window.globals = window.globals || {};
+		window.globals.session = {};
+		page.start();
+		page();
+		
+		//
+		// Quick and dirty function we can run to check
+		// the user's session's status from server,
+		// and update the UI accordingly
+		//
+		window.globals.sessionCheck = function(fx){
+			//
+			// if the session's timeout (ui variable) doesn't exist or is expired,
+			// update session from the server and run function (fx) if
+			// on exists...
+			//
+			// otherwise, keep-on-keepin'-on
+			//
+			window.globals.timeout = window.globals.timeout || 0;
+			
+			
+			if(new Date().getTime() > window.globals.timeout){
+				//
+				// Set new timeout to 5 minutes in future
+				//
+				window.globals.timeout = new Date().getTime() + (1000 * 60 * 5);
+				
+				//
+				// Pull data from server
+				//
+				$.get("/api/validate/status")
+					.done(function(session){
+						window.globals.session = session.data;
+						
+						//
+						//	Server says user is valid
+						//
+						if(session.data["validation-status"] == "valid"){
+							window.globals.session.valid = true;				
+							//
+							// Here's to DRY
+							//
+							if(fx){
+								return fx();
+							} else {
+								return true;
+							}
+						} else {
+						//
+						// Server says user is bad
+						// Route the user back to the front...
+							page("/");
+						
+						}
+					});
+			} else {
+				if(fx){
+					return fx();
+				} else {
+					return true;
+				}
+			}
+		}
+		
 		//
 		// Set each of our templates as a partial, why not?
 		//
@@ -59,78 +126,66 @@
 			templates[template] = Hogan.compile(templates[template]);
 		}
 		
-		window.globals = window.globals || {};
-		window.globals.session = {};
-
-		$.get("/training_api/api/user/status")
-			.done(function(session){
-			
-				window.globals.session = session;
-				templates.partial = templates["index/new.html"];
-				
-				page.start();
-				page();
-
-			});
-			
-			
-
-			//
-			// ROUTER...
-			//
-			page("/training/", function(){
-
-				if(window.globals.session["validation-status"] == "new"){
-					templates.partial = templates["index/new.html"];
-				} else if(window.globals.session["validation-status"] == "pending"){
-					templates.partial = templates["index/pending.html"];
-				} else if(window.globals.session["validation-status"] == "valid"){
-					templates.partial = templates["index/valid.html"];
-				}
-
-				window.globals.session.state = {};
-				window.globals.session.state.home = true;
-
-				var ui = templates["main.html"].render(globals.session,templates);
-				$("body").html(ui);
-				
-
-			});
-			
-			page("/training/courses", function(){
-				templates.partial = templates["course/index.html"];
-				window.globals.session.state = {};
-				window.globals.session.state.courses = true;
-				console.log("courses");
-				
-				var ui = templates["main.html"].render(globals.session,templates);
-				$("body").html(ui);
-				
-			});
-			
-			page("/training/admin", function(){
-				templates.partial = templates["admin/index.html"];
-				window.globals.session.state = {};
-				window.globals.session.state.admin = true;
-				console.log("admin");
-				
-				var ui = templates["main.html"].render(globals.session,templates);
-				$("body").html(ui);
-			});
-
-			
-			
-			
-			//
-			// CATCH-ALL
-			//
-			page("*", function(csx){
-				console.log(csx);
-			});
-			
-
-			
+		$(document).ready(function(){
+			page();			
+		});
 		
+		
+		//
+		// ROUTER...
+		//
+		
+		//
+		// DO THIS FOR EVERY PAGE CHANGE...
+		//
+		page('*', function(ctx,  next){
+			window.globals.sessionCheck(next);
+		});
+			
+			
+		page("/", function(ctx){
+
+
+			
+			if(window.globals.session["validation-status"] == "new"){
+				templates.partial = templates["index/new.html"];
+			} else if(window.globals.session["validation-status"] == "pending"){
+				templates.partial = templates["index/pending.html"];
+			} else if(window.globals.session["validation-status"] == "valid"){
+
+				templates.partial = templates["index/valid.html"];
+			}
+
+			window.globals.session.state = {};
+			window.globals.session.state.home = true;
+
+			var ui = templates["main.html"].render(globals.session,templates);
+			$("body").html(ui);
+			
+
+		});
+		
+		page("/courses", function(ctx){
+			templates.partial = templates["course/index.html"];
+			window.globals.session.state = {};
+			window.globals.session.state.courses = true;
+			console.log("courses");
+			
+			var ui = templates["main.html"].render(globals.session,templates);
+			$("body").html(ui);
+			
+		});
+		
+		page("/admin", function(ctx){
+			templates.partial = templates["admin/index.html"];
+			window.globals.session.state = {};
+			window.globals.session.state.admin = true;
+			console.log("admin");
+			
+			var ui = templates["main.html"].render(globals.session,templates);
+			$("body").html(ui);
+		});
+
 
 
 	</script>

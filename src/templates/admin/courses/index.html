@@ -1,0 +1,64 @@
+<div class="col-md-12" id="user-table-target"></div>
+
+<div class="col-md-12">
+	<form class="form-horizontal">
+	<fieldset>
+
+	<!-- Text input-->
+	<div class="form-group">
+	  <label style="text-align: left;" class="col-md-12 control-label" for="textinput">Text Input</label>  
+	  <div class="col-md-12">
+		<input id="textinput" name="textinput" type="text" placeholder="placeholder" class="form-control input-md">
+	  </div>
+	</div>
+
+	<!-- Button -->
+	<div class="form-group">
+	  <label class="col-md-2 control-label" for="singlebutton">Single Button</label>
+	  <div class="col-md-4">
+		<button id="singlebutton" name="singlebutton" class="btn btn-primary">Button</button>
+	  </div>
+	</div>
+
+	</fieldset>
+	</form>
+</div>
+
+
+<script>
+
+	$(document).ready(function(){
+		renderUserAdminTable();
+	})
+
+
+
+	//
+	// tsk, tsk, tsk...
+	//
+	function renderUserAdminTable(){
+		$.get("/api/users")
+		.done(function(data){
+			$("#user-table-target").html(templates["admin/courses/table.html"].render(data.results))
+		});
+	}
+	
+	
+	//
+	//
+	//
+	function delete_user(email){
+		$.ajax({
+			"method": "DELETE",
+			"url": "/api/users/" + email
+		}).done(function(d){
+			//
+			console.log(d);
+			
+			//
+			renderUserAdminTable();
+			
+		})
+	}
+
+</script>

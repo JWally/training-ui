@@ -1,0 +1,138 @@
+<div class="col-md-12" id="user-table-target">
+
+</div>
+
+<div class="col-md-12">
+	{{> admin/users/edit.html}}
+</div>
+
+
+<script>
+
+	$(document).ready(function(){
+		renderUserAdminTable();
+	})
+
+
+
+	//
+	// tsk, tsk, tsk...
+	//
+	function renderUserAdminTable(){
+	
+		//
+		// Get a list of users
+		// and a list of all available roles
+		// then merge the two together so every
+		// user has all possible roles,
+		// and has them checked when they are that role
+		//
+		$.when(
+			$.get("/api/users"),
+			$.get("/api/roles")
+		).then(function(users, roles){
+		
+			roles = roles[0].results.data;
+			users = users[0].results.data;
+			
+			//
+			// Create a hash map so
+			// we can more easily work with
+			// users before converting it back
+			// to a straight array
+			//
+			var user_map = {};
+			users.forEach(function(user){
+			
+				// Load the map
+				user_map[user.email] = user_map[user.email] || user;
+				
+				// Give everyone a place to keep roles (mmm...roles)
+				user_map[user.email].roles = user_map[user.email].roles || {};
+
+				// Loop through the list of all roles (I'm aware this is duplicative, but it is expedient and works...)
+				roles.forEach(function(role){
+					// Give the user that role if it doesn't already exist
+					user_map[user.email].roles[role._id] = user_map[user.email].roles[role._id] || JSON.parse(JSON.stringify(role));
+					
+					//
+					// Set an attribute "checked" on the user's role, if the user's role_id = the role's id
+					// N.B. users are duplicated because they can have more than 1 role...
+					// This process clears that up
+					//
+					if(role._id == user.role_id){
+						user_map[user.email].roles[role._id].checked = true;
+					}
+				});
+			});
+			
+			users = Object.values(user_map)
+				
+			users.forEach(function(user){
+					user.roles = Object.values(user.roles);
+				});
+				
+			console.log(user_map,users);
+			$("#user-table-target").html(templates["admin/users/table.html"].render({data: users}));
+		
+		});
+	}
+	
+	
+	// //////////////////////////////////////////////////////////////////////
+	// DELETE USER
+	// //////////////////////////////////////////////////////////////////////
+	function delete_user(email){
+		$.ajax({
+			"method": "DELETE",
+			"url": "/api/users/" + email
+		}).done(function(d){
+			renderUserAdminTable();
+		})
+	}
+	
+	// ///////////////////////////////////////////////////////////////////////
+	// (UN)LINK USER TO ROLE
+	// ///////////////////////////////////////////////////////////////////////
+	function handle_check(el, ev){
+
+		if(ev.target.checked === false){
+			var method = "DELETE"
+		} else {
+			var method = "POST"
+		}
+
+		$.ajax({
+			"method": method,
+			"url": `/api/users/${ev.target.dataset.email}/roles/${ev.target.dataset.role}`
+		})
+		.done(function(d){
+			console.log(d);
+		})
+		.error(function(e){
+			console.log(e);
+		})
+
+	}
+	
+	
+	// ///////////////////////////////////////////////////////////////////////
+	// CREATE USER
+	// ///////////////////////////////////////////////////////////////////////
+	function create_user(){
+		var email = document.querySelector("#createUserEmail").value;
+	
+		$.ajax({
+			"method": "POST",
+			"url": `/api/users/${email}`
+		})
+		.done(function(d){
+			console.log(d);
+			renderUserAdminTable();
+		})
+		.error(function(e){
+			console.log(e);
+		})
+	
+	}
+</script>

@@ -12,8 +12,11 @@
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
             <li {{#state.home}}class="active"{{/state.home}}><a href="/training/">Home</a></li>
+			{{#valid}}
             <li {{#state.courses}}class="active"{{/state.courses}}><a href="/training/courses">Courses</a></li>
-            <li {{#state.admin}}class="active"{{/state.admin}}><a href="/training/admin">Admin</a></li>
+			<li {{#state.admin}}class="active"{{/state.admin}}><a href="/training/admin">Admin</a></li>
+			<li><a href="/api/validate/reset">Log Out</a></li>
+            {{/valid}}
           </ul>
         </div><!--/.nav-collapse -->
       </div>

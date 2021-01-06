@@ -74,74 +74,15 @@ input:checked + .slider:before {
 
 
 <script>
-	$.when(
-		//
-		// Load courses first...
-		//
-		$.get("/training_api/api/courses", function(courses){
-			return courses;
-		}),
-	
-		//
-		// Get the user's data next
-		//
-		$.get("/training_api/api/user/data",function(user){
-			return user;
-		})
-	
-	
-	).then(function(courses, user){
-		//
-		// Get data normalized from whatever
-		//
-		courses = courses[0];
-		user = user[0];
-		
-		//
-		// Map and filter out everything
-		// so that only courses the user
-		// should see...are shown...
-		//
-		
-		//1.) First convert the hash map of courses into an array
-		//    of objects
-		var table = Object.keys(courses).map(function(course){
-		
-			//
-			// TODO: Put logic here based on how we record that the user did stuff...
-			//
-			if(user.courses[course]){
-				
-				//
-				// UGH...
-				//
-				user.courses[course].sort(function(a,b){return a > b ? -1 : 1});
-			
-				if(user.courses[course][0].checked){
-					if(user.courses[course][0].checked === "true"){
-						courses[course].checked = "checked";
-					}
-				}
-			}
-		
-			return courses[course]
-		})
-		// 2.) Then, remove anything the user shouldn't see based on their role...
-		//
-		.filter(function(course){
-			//
-			for(role in user.roles){
-				if(course.roles[role]){
-					return true;
-				}
-			}
-			return false;
-		})
-
-
-		
-		$("#course-table").html(window.templates["course/course-table.html"].render({"data": table}));
-
+	//
+	// Load courses first...
+	//
+	$.get("/api/users/" + window.globals.session["email-address"] + "/courses/")
+	.done(function(courses){
+		$("#course-table").html(window.templates["course/course-table.html"].render({"data": courses.results.data}));
+	})
+	.error(function(err){
+		console.log("ERR",err);
 	})
 
 
@@ -149,18 +90,26 @@ input:checked + .slider:before {
 	// Function to record what the user changed
 	//
 	function markCourse(ev, el){
+	
 		//
 		// Get the course ID out of the event...
 		//
 		var id = ev.target.id;
+		var checked = ev.target.checked;
+		
+		if(checked){
+			checked = "checked";
+		} else {
+			checked = "";
+		}
+		
 		id = id.match(/[0-9]+/)[0];
 	
 		$.ajax({
-			"url": `/training/api/user/course/${id}`,
+			"url": "/api/users/" +window.globals.session["email-address"]+ "/courses/" +id+ "/status",
 			"method": "POST",
 			"data": {
-				"checked": ev.target.checked,
-				"user": window.globals.session["email-address"]
+				"checked": checked
 			}
 		})
 	}
