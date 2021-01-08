@@ -1,0 +1,20 @@
+<!-- css stolen from  https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_switch -->
+
+<h1 style="margin-top: 100px;">Hello {{email-address}}</h1>
+
+<p class="lead">Below is a list of courses and what not that you're responsible for:</p>
+
+<div id="course-table"></div>
+
+
+<script>
+	// Load courses first...
+	$.get("/api/users/" + window.globals.session["email-address"] + "/courses/")
+	.done(function(courses){
+		console.log("courses",courses);
+		$("#course-table").html(window.templates["courses/course-table.html"].render({"data": courses.results.data}));
+	})
+	.error(function(err){
+		console.log("ERR",err);
+	});
+</script>

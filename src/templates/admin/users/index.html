@@ -1,11 +1,9 @@
-<div class="col-md-12" id="user-table-target">
 
-</div>
-
-<div class="col-md-12">
+<div class="col-md-9">
 	{{> admin/users/edit.html}}
 </div>
 
+<div class="col-md-9" id="user-table-target"></div>
 
 <script>
 
@@ -91,6 +89,19 @@
 		})
 	}
 	
+	// //////////////////////////////////////////////////////////////////////
+	// SHOW USER'S COURSES
+	// //////////////////////////////////////////////////////////////////////
+	function show_user_courses(email){
+		$.ajax({
+			"method": "GET",
+			"url": `/api/users/${email}/courses/`
+		}).done(function(d){
+			var tmp = window.templates["course/course-table.html"].render({email: email, data: d.results.data});
+			window.globals.utilities.show_modal(email,tmp,true);
+		})
+	}
+	
 	// ///////////////////////////////////////////////////////////////////////
 	// (UN)LINK USER TO ROLE
 	// ///////////////////////////////////////////////////////////////////////
@@ -133,6 +144,9 @@
 		.error(function(e){
 			console.log(e);
 		})
-	
 	}
+		
+		
+	
+	
 </script>

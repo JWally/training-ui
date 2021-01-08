@@ -7,18 +7,17 @@
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
     <meta name="description" content="">
     <meta name="author" content="">
-    <link rel="canonical" href="https://getbootstrap.com/docs/3.3/examples/cover/">
 
     <title>Training Tracker</title>
 
 	<!-- Latest compiled and minified CSS -->
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<link rel="stylesheet" href="/training/src/css/bootstrap.css" >
 
 	<!-- Optional theme -->
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+	<link rel="stylesheet" href="/training/src/css/bootstrap-theme.css" >
 
     <!-- Custom styles for this template -->
-    <link href="/training/src/cover.css" rel="stylesheet">
+    <link href="/training/src/css/cover.css" rel="stylesheet">
 
   </head>
 
@@ -30,36 +29,43 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="/training/src/scripts/production/jquery.js"></script>
 
 	<!-- Latest compiled and minified JavaScript -->
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+	<script src="/training/src/scripts/production/bootstrap.js" ></script>
 	
 	<!-- FUN LIBARY TO ROUTE SHIT AND WHATS NOT! -->
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/page.js/1.11.6/page.js"></script>
+	<script src="/training/src/scripts/production/page.js"></script>
+	
+	<!-- Templating Engine -->
+	<script src="/training/src/scripts/production/hogan.js"></script>
 	
 	<!-- This is how we access each of our templates. It exposes an ugly global called "templates" -->
 	<script src="/training/src/templates.js"></script>
+
 	
-	<script src="http://twitter.github.com/hogan.js/builds/3.0.1/hogan-3.0.1.js"></script>
+	<script type="module" src="/training/src/test.js"></script>
 
 	<!-- Figure out the state of the user, and render appropriately... -->
 	<script>
 	
+
+	//
+	// Set each of our templates as a partial, why not?
+	//
+	for(var template in templates){
+		templates[template] = Hogan.compile(templates[template]);
+	}
 	
 	//
 	// TODO:
 	// This whole thing wreaks of code stink...
 	// Please to clean up
 	//
-	
-	
 		page.base("/training");
 		window.globals = window.globals || {};
 		window.globals.session = {};
-		page.start();
-		page();
-		
+
 		//
 		// Quick and dirty function we can run to check
 		// the user's session's status from server,
@@ -75,23 +81,19 @@
 			//
 			window.globals.timeout = window.globals.timeout || 0;
 			
-			
+			// If their session is stale, pull it from the system
+			// and run some checks
 			if(new Date().getTime() > window.globals.timeout){
-				//
-				// Set new timeout to 5 minutes in future
-				//
+
+				// Set up a new session timer five minutes in the future
 				window.globals.timeout = new Date().getTime() + (1000 * 60 * 5);
 				
-				//
-				// Pull data from server
-				//
+				// Check session data from the server
 				$.get("/api/validate/status")
 					.done(function(session){
 						window.globals.session = session.data;
-						
-						//
+
 						//	Server says user is valid
-						//
 						if(session.data["validation-status"] == "valid"){
 							window.globals.session.valid = true;				
 							//
@@ -103,13 +105,13 @@
 								return true;
 							}
 						} else {
-						//
 						// Server says user is bad
 						// Route the user back to the front...
 							page("/");
-						
 						}
 					});
+			// Otherwise their session is not stale.
+			// Keep on movin!
 			} else {
 				if(fx){
 					return fx();
@@ -119,74 +121,136 @@
 			}
 		}
 		
+		// ///////////////////////////////
 		//
-		// Set each of our templates as a partial, why not?
+		// FUNCTION TO RENDER FRONT-PAGES...
 		//
-		for(var template in templates){
-			templates[template] = Hogan.compile(templates[template]);
+		// ///////////////////////////////
+		function renderer(ctx, nxt, template){
+			// assign the partial to the global templates
+			// variable
+			templates.partial = templates[template];
+
+			// No Error checking here...?
+			var state = template.match(/^.+?(?=\/)/)[0];
+			
+			window.globals.session.state = {};
+			window.globals.session.state[state] = true;
+			
+			var ui = templates["main.html"].render(globals.session,templates);
+			$("body").html(ui);
 		}
 		
-		$(document).ready(function(){
-			page();			
-		});
-		
-		
+		// ///////////////////////////////
 		//
-		// ROUTER...
+		// FUNCTION TO PROTECT ROUTES / LIMIT USERS ACCESS BASED ON ROLES
 		//
+		// ///////////////////////////////
+		function authorizer(ctx, nxt, credentials){
 		
+			// Assume they're going to fail,
+			// change it when proven wrong
+			var fail = true;
+		
+			// Make sure session is set
+			if(window.globals.session){
+				// They need roles
+				if(window.globals.session.roles){
+					// They gave us a simple string
+					if(typeof credentials === "string"){
+						// If they match something in roles,
+						// set fail to false; let them pass
+						if(window.globals.session.roles[credentials]){
+							fail = false;
+						}
+					// They gave us an array (hopefully)
+					} else if(typeof credentials === "object"){
+						// Loop through credentials we were given
+						credentials.forEach(function(credential){
+							// If the credential on this loop matches
+							if(window.globals.session.roles[credential]){
+								// Let them pass
+								fail = false;
+							}
+						});
+					}
+				}
+			}
+			
+			// Skip all other logic, and 
+			// Just Fall through
+			
+			// Fail hasn't changed, throw them out
+			if(fail === true){
+				page("/unauthorized");
+				nxt();
+			} else {
+			// Fail has changed. Let them pass
+				nxt();
+			}
+		}
+
+		// ///////////////////////////////
 		//
 		// DO THIS FOR EVERY PAGE CHANGE...
 		//
+		// ///////////////////////////////
 		page('*', function(ctx,  next){
 			window.globals.sessionCheck(next);
 		});
 			
-			
-		page("/", function(ctx){
-
-
-			
+		// ///////////////////////////////////////////////////////////////////////
+		// ///////////////////////////////////////////////////////////////////////
+		page("/", function(ctx, next){
 			if(window.globals.session["validation-status"] == "new"){
-				templates.partial = templates["index/new.html"];
+				return renderer(ctx, next, "index/new.html")
 			} else if(window.globals.session["validation-status"] == "pending"){
-				templates.partial = templates["index/pending.html"];
+				return renderer(ctx, next, "index/pending.html")
 			} else if(window.globals.session["validation-status"] == "valid"){
-
-				templates.partial = templates["index/valid.html"];
+				return renderer(ctx, next, "index/valid.html")
 			}
-
-			window.globals.session.state = {};
-			window.globals.session.state.home = true;
-
-			var ui = templates["main.html"].render(globals.session,templates);
-			$("body").html(ui);
-			
-
 		});
 		
-		page("/courses", function(ctx){
-			templates.partial = templates["course/index.html"];
-			window.globals.session.state = {};
-			window.globals.session.state.courses = true;
-			console.log("courses");
+		// ///////////////////////////////////////////////////////////////////////
+		// ///////////////////////////////////////////////////////////////////////
+		page("/courses",
+		
+			function(ctx, next){
+				authorizer(ctx, next, ["general","admin"]);
+			},
 			
-			var ui = templates["main.html"].render(globals.session,templates);
-			$("body").html(ui);
-			
+			function(ctx,next){
+				return renderer(ctx, next, "courses/index.html")
+			}
+		);
+
+		// ///////////////////////////////////////////////////////////////////////
+		// ///////////////////////////////////////////////////////////////////////
+		page("/admin",
+		
+			function(ctx, next){
+				authorizer(ctx,next,"admin")
+			},
+		
+			function(ctx,next){
+				return renderer(ctx, next, "admin/index.html")
+			}
+		);
+		
+		// ///////////////////////////////////////////////////////////////////////
+		// ///////////////////////////////////////////////////////////////////////
+		page("/unauthorized", function(ctx,next){
+			return renderer(ctx, next, "errors/403.html")
 		});
 		
-		page("/admin", function(ctx){
-			templates.partial = templates["admin/index.html"];
-			window.globals.session.state = {};
-			window.globals.session.state.admin = true;
-			console.log("admin");
-			
-			var ui = templates["main.html"].render(globals.session,templates);
-			$("body").html(ui);
+		// ///////////////////////////////////////////////////////////////////////
+		// ///////////////////////////////////////////////////////////////////////
+		page("*", function(ctx,next){
+			renderer(ctx, next, "errors/404.html")
 		});
 
 
+		page();
 
 	</script>
 </html>

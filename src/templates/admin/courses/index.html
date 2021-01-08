@@ -1,34 +1,14 @@
-<div class="col-md-12" id="user-table-target"></div>
 
-<div class="col-md-12">
-	<form class="form-horizontal">
-	<fieldset>
-
-	<!-- Text input-->
-	<div class="form-group">
-	  <label style="text-align: left;" class="col-md-12 control-label" for="textinput">Text Input</label>  
-	  <div class="col-md-12">
-		<input id="textinput" name="textinput" type="text" placeholder="placeholder" class="form-control input-md">
-	  </div>
-	</div>
-
-	<!-- Button -->
-	<div class="form-group">
-	  <label class="col-md-2 control-label" for="singlebutton">Single Button</label>
-	  <div class="col-md-4">
-		<button id="singlebutton" name="singlebutton" class="btn btn-primary">Button</button>
-	  </div>
-	</div>
-
-	</fieldset>
-	</form>
+<div class="col-md-9">
+	{{> admin/courses/edit.html}}
 </div>
 
+<div class="col-md-9" id="course-table-target"></div>
 
 <script>
 
 	$(document).ready(function(){
-		renderUserAdminTable();
+		renderCourseAdminTable();
 	})
 
 
@@ -36,29 +16,163 @@
 	//
 	// tsk, tsk, tsk...
 	//
-	function renderUserAdminTable(){
-		$.get("/api/users")
-		.done(function(data){
-			$("#user-table-target").html(templates["admin/courses/table.html"].render(data.results))
+	function renderCourseAdminTable(){
+	
+		//
+		// Get a list of courses
+		// and a list of all available roles
+		// then merge the two together so every
+		// course has all possible roles,
+		// and has them checked when they are that role
+		//
+		$.when(
+			$.get("/api/courses"),
+			$.get("/api/roles")
+		).then(function(courses, roles){
+		
+			roles = roles[0].results.data;
+			courses = courses[0].results.data;
+			
+			//
+			// Create a hash map so
+			// we can more easily work with
+			// courses before converting it back
+			// to a straight array
+			//
+			var course_map = {};
+			courses.forEach(function(course){
+			
+				// Load the map
+				course_map[course.course_id] = course_map[course.course_id] || course;
+				
+				// Give everyone a place to keep roles (mmm...roles)
+				course_map[course.course_id].roles = course_map[course.course_id].roles || {};
+
+				// Loop through the list of all roles (I'm aware this is duplicative, but it is expedient and works...)
+				roles.forEach(function(role){
+					// Give the course that role if it doesn't already exist
+					course_map[course.course_id].roles[role._id] = course_map[course.course_id].roles[role._id] || JSON.parse(JSON.stringify(role));
+					
+					//
+					// Set an attribute "checked" on the course's role, if the course's role_id = the role's id
+					// N.B. courses are duplicated because they can have more than 1 role...
+					// This process clears that up
+					//
+					if(role._id == course.role_id){
+						course_map[course.course_id].roles[role._id].checked = true;
+					}
+				});
+			});
+			
+			courses = Object.values(course_map)
+				
+			courses.forEach(function(course){
+					course.roles = Object.values(course.roles);
+				});
+				
+			$("#course-table-target").html(templates["admin/courses/table.html"].render({data: courses}));
+		
 		});
 	}
 	
 	
-	//
-	//
-	//
-	function delete_user(email){
+	// //////////////////////////////////////////////////////////////////////
+	// CREATE COURSE
+	// //////////////////////////////////////////////////////////////////////
+	function create_course(){
+
+		var el = document.querySelector("#createCourse")
+		
 		$.ajax({
-			"method": "DELETE",
-			"url": "/api/users/" + email
+			"method": "POST",
+			"url": "/api/courses",
+			"data": {
+				"name": el.value
+			}
 		}).done(function(d){
-			//
-			console.log(d);
-			
-			//
-			renderUserAdminTable();
-			
+			el.value = "";
+			renderCourseAdminTable();
+		})
+		
+	}
+	
+	// //////////////////////////////////////////////////////////////////////
+	// UPDATE COURSE NAME
+	// //////////////////////////////////////////////////////////////////////
+	function update_course_name(_id, event){
+		$.ajax({
+			"method": "POST",
+			"url": "/api/courses/" + _id + "/name",
+			"data": {
+				"value": event.target.value
+			}
+		}).done(function(d){
+			// ???
+		}).error(function(e){
+			console.log(e);
 		})
 	}
+	
+	// //////////////////////////////////////////////////////////////////////
+	// UPDATE COURSE NAME
+	// //////////////////////////////////////////////////////////////////////
+	function update_course_duedate(_id, event){
+		$.ajax({
+			"method": "POST",
+			"url": "/api/courses/" + _id + "/duedate",
+			"data": {
+				"value": event.target.value
+			}
+		}).done(function(d){
+			// ???
+		}).error(function(e){
+			console.log(e);
+		})
+	}
+	
+	// //////////////////////////////////////////////////////////////////////
+	// DELETE COURSE
+	// //////////////////////////////////////////////////////////////////////
+	function delete_course(_id){
+		$.ajax({
+			"method": "DELETE",
+			"url": "/api/courses/" + _id
+		}).done(function(d){
+			renderCourseAdminTable();
+		}).error(function(e){
+			console.log(e);
+		})
+	}
+	
+	// ///////////////////////////////////////////////////////////////////////
+	// (UN)LINK USER TO ROLE
+	// ///////////////////////////////////////////////////////////////////////
+	function handle_role_course_check(el, ev){
 
+		if(ev.target.checked === false){
+			var method = "DELETE"
+		} else {
+			var method = "POST"
+		}
+
+		$.ajax({
+			"method": method,
+			"url": `/api/courses/${ev.target.dataset.course_id}/roles/${ev.target.dataset.role}`
+		})
+		.done(function(d){
+			console.log(d);
+		})
+		.error(function(e){
+			console.log(e);
+		})
+
+	}
+	
+	
+
+		
+		
+
+	
+	
 </script>

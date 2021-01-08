@@ -1,20 +1,92 @@
-<table class="table table-bordered" id="course-table">
-	<thead>
-		<tr>
-			<th style="text-align: center;">E-Mail</th>
-			<th style="text-align: center;">Created</th>
-			<th style="text-align: center;">Roles</th>
-			<th></th>
-		</tr>
-	</thead>
-	<tbody>
-		{{#data}}
-			<tr>
-				<td style="text-align: center;">{{email}}</td>
-				<td style="text-align: center;">{{created}}</td>
-				<td style="text-align: center;">{{role_name}}</td>
-				<td> <a class="btn btn-danger" onClick="delete_user('{{email}}', this)" href="#" id="{{email}}" class="delete-me">DELETE</a></td>
-			</tr>
-		{{/data}}
-	</tbody>
-</table>
+{{#data}}
+	<div class="col-md-12 card">
+		<!-- TOGGLER BUTTON -->
+		<span style="float:right; font-size: 26px; margin-top: -10px; margin-right: 10px;" onclick="window.globals.utilities.toggler(this, event)"; role="button">+</span>
+
+
+		<!-- CARD TITLE -->
+		<div class="anti-toggler">
+			<div class="faq col-xs-11">
+				<div class="left-faq col-lg-3 col-md-3 col-sm-3 col-xs-3">
+					{{course_id}}
+				</div>
+				<div class="right-faq col-lg-9 col-md-9 col-sm-9 col-xs-9">
+					{{course_name}}
+				</div>
+			</div>
+		</div>
+		
+		
+		<!-- CARD BODY -->
+		<div class="toggler" style="display: none;">
+
+		
+			<div class="faq col-xs-11">
+				<div class="left-faq col-lg-3 col-md-3 col-sm-3 col-xs-3">
+					Course Id
+				</div>
+				<div class="right-faq col-lg-9 col-md-9 col-sm-9 col-xs-9">
+					{{course_id}}
+				</div>
+			</div>
+
+			
+			<div class="faq col-xs-11">
+				<div class="left-faq col-lg-3 col-md-3 col-sm-3 col-xs-3">
+					Name
+				</div>
+				<div class="right-faq col-lg-9 col-md-9 col-sm-9 col-xs-9">
+					<textarea onblur="update_course_name('{{course_id}}', event)" data-prior="{{course_name}}" style="width: 100%; border: none; outline: none;">{{course_name}}</textarea>
+				</div>
+			</div>
+
+
+			<div class="faq col-xs-11">
+				<div class="left-faq col-lg-3 col-md-3 col-sm-3 col-xs-3">
+					Created
+				</div>
+				<div class="right-faq col-lg-9 col-md-9 col-sm-9 col-xs-9">
+					{{created}}
+				</div>
+			</div>
+			
+			<div class="faq col-xs-11">
+				<div class="left-faq col-lg-3 col-md-3 col-sm-3 col-xs-3">
+					Due Date
+				</div>
+				<div class="right-faq col-lg-9 col-md-9 col-sm-9 col-xs-9">
+					<input value="{{duedate}}" onblur="update_course_duedate('{{course_id}}', event)" type="date" style="outline: 0; border-width: 0 0 0px;" value="{{due_date}}" id="course_due_{{course_id}}"></input>
+				</div>
+			</div>
+			
+			
+			<div class="faq col-xs-11">
+				<div style="vertical-align: middle" class="left-faq col-lg-3 col-md-3 col-sm-3 col-xs-3">
+					Roles
+				</div>
+				<div class="right-faq col-lg-9 col-md-9 col-sm-9 col-xs-9">
+					{{#roles}}
+						<div style="margin-top: 0px;" class="checkbox">
+							<label for="roles-{{course_id}}-{{_id}}">
+								<input data-course_id="{{course_id}}" data-role="{{_id}}" oninput="handle_role_course_check(this,event)" {{#checked}}checked{{/checked}} type="checkbox" name="roles-{{course_id}}-{{_id}}" id="roles-{{course_id}}-{{_id}}" value="{{name}}">
+								{{name}}
+							</label>
+						</div>
+					{{/roles}}
+				</div>
+			</div>
+
+
+			<div class="faq col-xs-11">
+				<div class="left-faq col-lg-3 col-md-3 col-sm-3 col-xs-3">
+					Delete
+				</div>
+				<div class="right-faq col-lg-9 col-md-9 col-sm-9 col-xs-9">
+					<span role="button" style="color: #337ab7;" onClick="delete_course('{{course_id}}', this)" href="#" id="{{course_id}}" class="delete-me">CLICK HERE</span>
+				</div>
+			</div>
+
+
+		</div>
+	</div>
+{{/data}}

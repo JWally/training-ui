@@ -1,0 +1,26 @@
+
+<table class="table table-bordered" id="course-table">
+	<thead>
+		<tr>
+			<th onclick="window.globals.utilities.sort_table(this)">Course ID</th>
+			<th onclick="window.globals.utilities.sort_table(this)">Course Name</th>
+			<th onclick="window.globals.utilities.sort_table(this)">Due Date</th>
+			<th onclick="window.globals.utilities.sort_table(this)">Complete</th>
+		</tr>
+	</thead>
+	<tbody>
+		{{#data}}
+			<tr>
+				<td style="text-align: center;">{{_id}}</td>
+				<td style="text-align: left;">{{name}}</td>
+				<td style="text-align: left;">{{due_date}}</td>
+				<td style="text-align: left;">
+					<label class="switch">
+						<input {{status}} onchange="window.globals.utilities.markCourse(event, this)" id="course-{{_id}}" {{#email}}data-email="{{email}}"{{/email}} type="checkbox" />
+						<span class="slider"></span>
+					</label>
+				</td>
+			</tr>
+		{{/data}}
+	</tbody>
+</table>
