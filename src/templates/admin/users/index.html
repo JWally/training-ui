@@ -70,7 +70,6 @@
 					user.roles = Object.values(user.roles);
 				});
 				
-			console.log(user_map,users);
 			$("#user-table-target").html(templates["admin/users/table.html"].render({data: users}));
 		
 		});
@@ -86,7 +85,12 @@
 			"url": "/api/users/" + email
 		}).done(function(d){
 			renderUserAdminTable();
+		}).error(function(err){
+			window.globals.utilities.show_modal("Uh...Oh...","Looks like something went wrong. Check console for details")
+			console.log("ERR",err);
 		})
+		
+		
 	}
 	
 	// //////////////////////////////////////////////////////////////////////
@@ -99,6 +103,9 @@
 		}).done(function(d){
 			var tmp = window.templates["course/course-table.html"].render({email: email, data: d.results.data});
 			window.globals.utilities.show_modal(email,tmp,true);
+		}).error(function(err){
+			window.globals.utilities.show_modal("Uh...Oh...","Looks like something went wrong. Check console for details")
+			console.log("ERR",err);
 		})
 	}
 	
@@ -118,10 +125,10 @@
 			"url": `/api/users/${ev.target.dataset.email}/roles/${ev.target.dataset.role}`
 		})
 		.done(function(d){
-			console.log(d);
 		})
 		.error(function(e){
-			console.log(e);
+			window.globals.utilities.show_modal("Uh...Oh...","Looks like something went wrong. Check console for details")
+			console.log("ERR",err);
 		})
 
 	}
@@ -138,11 +145,11 @@
 			"url": `/api/users/${email}`
 		})
 		.done(function(d){
-			console.log(d);
 			renderUserAdminTable();
 		})
-		.error(function(e){
-			console.log(e);
+		.error(function(err){
+			window.globals.utilities.show_modal("Uh...Oh...","Looks like something went wrong. Check console for details")
+			console.log("ERR",err);
 		})
 	}
 		

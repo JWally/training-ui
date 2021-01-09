@@ -11,10 +11,10 @@
 	// Load courses first...
 	$.get("/api/users/" + window.globals.session["email-address"] + "/courses/")
 	.done(function(courses){
-		console.log("courses",courses);
 		$("#course-table").html(window.templates["courses/course-table.html"].render({"data": courses.results.data}));
 	})
 	.error(function(err){
+		window.globals.utilities.show_modal("Uh...Oh...","Looks like something went wrong. Check console for details")
 		console.log("ERR",err);
 	});
 </script>

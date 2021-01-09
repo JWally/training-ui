@@ -92,8 +92,10 @@
 		}).done(function(d){
 			el.value = "";
 			renderCourseAdminTable();
-		})
-		
+		}).error(function(err){
+			window.globals.utilities.show_modal("Uh...Oh...","Looks like something went wrong. Check console for details")
+			console.log("ERR",err);
+		});
 	}
 	
 	// //////////////////////////////////////////////////////////////////////
@@ -108,8 +110,9 @@
 			}
 		}).done(function(d){
 			// ???
-		}).error(function(e){
-			console.log(e);
+		}).error(function(err){
+			window.globals.utilities.show_modal("Uh...Oh...","Looks like something went wrong. Check console for details")
+			console.log("ERR",err);
 		})
 	}
 	
@@ -125,8 +128,9 @@
 			}
 		}).done(function(d){
 			// ???
-		}).error(function(e){
-			console.log(e);
+		}).error(function(err){
+			window.globals.utilities.show_modal("Uh...Oh...","Looks like something went wrong. Check console for details")
+			console.log("ERR",err);
 		})
 	}
 	
@@ -139,8 +143,9 @@
 			"url": "/api/courses/" + _id
 		}).done(function(d){
 			renderCourseAdminTable();
-		}).error(function(e){
-			console.log(e);
+		}).error(function(err){
+			window.globals.utilities.show_modal("Uh...Oh...","Looks like something went wrong. Check console for details")
+			console.log("ERR",err);
 		})
 	}
 	
@@ -160,10 +165,10 @@
 			"url": `/api/courses/${ev.target.dataset.course_id}/roles/${ev.target.dataset.role}`
 		})
 		.done(function(d){
-			console.log(d);
 		})
-		.error(function(e){
-			console.log(e);
+		.error(function(err){
+			window.globals.utilities.show_modal("Uh...Oh...","Looks like something went wrong. Check console for details")
+			console.log("ERR",err);
 		})
 
 	}
