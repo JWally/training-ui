@@ -1,6 +1,34 @@
 /*
  * Globals
  */
+ 
+.navbar-brand{
+	background: url(/training/src/img/logo.png);
+	filter: invert(0.6);
+	width: 250px;
+	background-repeat: no-repeat;
+	background-position-y: 10px;
+	
+}
+    /* Medium Devices, Desktops */
+    @media only screen and (max-width : 992px) {
+		.big-menu{
+			display: none;
+		}
+		
+		.little-menu a{
+			color: #666;
+			font-size: 20px;
+			font-weight: 600;
+		}
+    }
+	
+    /* Medium Devices, Desktops */
+    @media only screen and (min-width : 992px) {
+		.little-menu{
+			display: none;
+		}
+    }
 
 
 /* Custom default button */
