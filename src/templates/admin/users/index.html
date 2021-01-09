@@ -101,7 +101,7 @@
 			"method": "GET",
 			"url": `/api/users/${email}/courses/`
 		}).done(function(d){
-			var tmp = window.templates["course/course-table.html"].render({email: email, data: d.results.data});
+			var tmp = window.templates["courses/course-table.html"].render({email: email, data: d.results.data});
 			window.globals.utilities.show_modal(email,tmp,true);
 		}).error(function(err){
 			window.globals.utilities.show_modal("Uh...Oh...","Looks like something went wrong. Check console for details")
