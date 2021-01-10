@@ -1,0 +1,81 @@
+
+<div class="col-md-9">
+	{{> admin/roles/edit.html}}
+</div>
+
+<div class="col-md-9" id="roles-table-target"></div>
+
+<script>
+
+	$(document).ready(function(){
+		renderRolesAdminTable();
+	})
+
+
+
+	//
+	// tsk, tsk, tsk...
+	//
+	function renderRolesAdminTable(){
+	
+		//
+		// Get a list of courses
+		// and a list of all available roles
+		// then merge the two together so every
+		// course has all possible roles,
+		// and has them checked when they are that role
+		//
+		$.get("/api/roles").done(function(roles){
+		
+			roles = roles.results.data;
+			
+			$("#roles-table-target").html(templates["admin/roles/table.html"].render({data: roles}));
+		
+		});
+	}
+	
+	
+	// //////////////////////////////////////////////////////////////////////
+	// CREATE COURSE
+	// //////////////////////////////////////////////////////////////////////
+	function create_role(){
+
+		var el = document.querySelector("#createRole")
+		
+		$.ajax({
+			"method": "POST",
+			"url": "/api/roles",
+			"data": {
+				"name": el.value
+			}
+		}).done(function(d){
+			el.value = "";
+			renderRolesAdminTable();
+			renderUserAdminTable();
+			renderCourseAdminTable();
+		}).error(function(err){
+			window.globals.utilities.show_modal("Uh...Oh...","Looks like something went wrong. Check console for details")
+			console.log("ERR",err);
+		});
+	}
+	
+	
+	// //////////////////////////////////////////////////////////////////////
+	// DELETE ROLE
+	// //////////////////////////////////////////////////////////////////////
+	function delete_role(_id){
+		$.ajax({
+			"method": "DELETE",
+			"url": "/api/roles/" + _id
+		}).done(function(d){
+			renderRolesAdminTable();
+			renderUserAdminTable();
+			renderCourseAdminTable();
+		}).error(function(err){
+			window.globals.utilities.show_modal("Uh...Oh...","Looks like something went wrong. Check console for details")
+			console.log("ERR",err);
+		})
+	}
+	
+
+</script>
