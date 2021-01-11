@@ -1,0 +1,200 @@
+
+<div class="aravo">
+    <div class="col-md-12">
+	
+        <div class="row">
+            <textarea placeholder="SQL Goes Here..." id="query" style="height: 400px; width: 100%;"></textarea>
+        </div>
+		
+        <div class="row">
+            <a role="button" id="queryButton" class="btn btn-default" style="width: 100%;" onclick='run_query()'>EXECUTE</a>
+            <a role="button" id="downloadButton" class="btn btn-default" style="width: 100%;" onclick='download_query("#target table")'>DOWNLOAD</a>
+            <a role="button" id="makeLinkButton" class="btn btn-default" style="width: 100%;" onclick='makelink()'>MAKE LINK</a>
+            <p style="margin-top: 30px"id="linker-shell"><a id="linker"></a></p>
+        </div>
+		
+    </div>
+</div>
+
+
+
+<div class="col-md-12">
+	<h1 class="page-header" id="page_title"></h1>
+	
+	<div class="row" id="tableFilter" style="display: none;">
+		<div class="col-md-5" style="padding-bottom: 30px; padding-left: 0px;">
+			<label class="control-label col-sm-2" for="filter">Table Filter</label>
+			<div class="col-sm-10"> 
+				<input type="text" class="form-control" id="filter" onkeyup="adHocTable(event,this)">
+			</div>
+		</div>
+	</div>
+
+
+
+	<div class="table-responsive tableFixHead" id="target">
+		<table id="" class="table table-striped"></table>
+	</div>
+</div>
+
+
+<script>
+	// //////////////////////////////////////////////////////////////////////
+	// RUN_QUERY => Cheap / Dirty Method to give user reporting abilities
+	//              for DIY reports
+	//				
+	// //////////////////////////////////////////////////////////////////////
+	function run_query(){
+	
+		// get whatever the user put in the query box
+		var query = document.querySelector("#query").value;
+		
+		// So they don't ping the s*** out of the system,
+		// hide the "query button"
+		$("#queryButton").hide();
+		document.querySelector("#tableFilter").style.display = "none";
+		// Send it to the server for evaluation / running
+		//
+		$.ajax({
+			"url": "/api/reports/query",
+			"method": "POST",
+			"data": {
+				"data": query
+			}
+		})
+		 .done(function(data){
+		 
+			$("#queryButton").show();
+			document.querySelector("#tableFilter").style.display = null;			
+			// redundant much?
+			data = data.results.data;
+			
+			// Concatenate all of the columns
+			// into a mega column that we can then search / filter on
+			// in the UI...
+			window.rawData = data.map(function(x){
+				//
+				x.__all__ = Object.values(x).join("||||");
+				//
+				return x;
+			});
+
+			var table = makeTable(window.rawData);
+			
+			document.querySelector("#target").innerHTML = table;
+			
+			setTimeout(function(){
+			
+				document.querySelectorAll("th")
+					.forEach(
+						function(th){
+							th.addEventListener("click", function(x){
+								window.globals.utilities.sort_table(x.target);
+							});
+						}
+					);
+					
+			}, 500);
+
+		 })
+		.error(function(err){
+			window.globals.utilities.show_modal("Uh...Oh...","Looks like something went wrong. Check console for details")
+			console.log("ERR",err);
+		});
+	}
+	
+	
+	
+	// //////////////////////////////////////////////////////////////////////
+	// makeTable => Build and Load an HTML table from data
+	//
+	// //////////////////////////////////////////////////////////////////////
+	function makeTable(data, search){
+	
+		if(typeof search !== "undefined"){
+			rxs = search.split(" ");
+		
+			rxs.forEach(function(rx){
+				rx = new RegExp(rx,"i");
+			
+				data = data.filter(function(record){
+					return rx.test(record.__all__);
+				});
+			});
+		}
+	
+		if(data.length == 0){
+			var new_set = {
+				"headers": Object.keys(window.rawData[0]),
+				"rows": []
+			};            
+		} else {
+			var new_set = {
+				"headers": Object.keys(data[0]),
+				"rows": data.map(function(x){return Object.values(x)})
+			};            
+		}
+	
+		var new_html = templates["admin/report-editor/table.html"].render({"data": new_set});
+		return new_html;
+	
+	}
+	
+	
+	
+	
+	// //////////////////////////////////////////////////////////////////////
+	// adHocTable => ???
+	//
+	// //////////////////////////////////////////////////////////////////////
+	window.globalTimeout;
+	
+	function adHocTable(ev,el){
+		// We're still typing here, so clear the time out
+		// if it was set recently...
+		clearTimeout(window.globalTimeout);
+		
+		// Load the table after 500ms of inaction...
+		//
+		window.globalTimeout = setTimeout(function(){
+			// Build the table...
+			//
+			var newHtml = makeTable(window.rawData, ev.target.value);
+			
+			
+			document.querySelector("#target").innerHTML = newHtml;
+			//
+			// Yo Dawg!
+			//
+			setTimeout(function(){
+			
+				document.querySelectorAll("th")
+					.forEach(
+						function(th){
+							th.addEventListener("click", function(x){
+								window.globals.utilities.sort_table(x.target);
+							});
+						}
+					);
+					
+			}, 200);
+		}, 500);
+	}
+	
+	//
+	// TOTAL HACK
+	//
+	function download_query(query){
+	
+		var table = document.querySelector(`${query}`);
+		
+		table = window.globals.utilities.table_to_array(table);
+		
+		// Pop All
+		table.forEach(function(x){x.pop()});
+		
+		window.globals.utilities.array_to_download(table,"data.csv");
+	}
+
+
+</script>

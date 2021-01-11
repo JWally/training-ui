@@ -17,6 +17,9 @@
             <li role="presentation">
                 <a href="#reports" aria-controls="reports" role="tab" data-toggle="tab">Reports</a>
             </li>
+            <li role="presentation">
+                <a href="#report-editor" aria-controls="report-editor" role="tab" data-toggle="tab">Report Editor</a>
+            </li>
         </ul>
     </div>
     <!-- CONTAINER FOR TATTLER TABLE-->
@@ -26,7 +29,8 @@
 			<a href="#users" aria-controls="users" role="tab" data-toggle="tab">Users</a> |
 			<a href="#courses" aria-controls="courses" role="tab" data-toggle="tab">Courses</a> |
 			<a href="#roles" aria-controls="roles" role="tab" data-toggle="tab">Roles</a> |
-			<a href="#reports" aria-controls="reports" role="tab" data-toggle="tab">Reports</a>
+			<a href="#reports" aria-controls="reports" role="tab" data-toggle="tab">Reports</a> |
+			<a href="#report-editor" aria-controls="report-editor" role="tab" data-toggle="tab">Report Editor</a>
 			<hr />
 		</div>
 	
@@ -42,7 +46,10 @@
                 {{> admin/roles/index.html}}
             </div>
             <div role="tabpanel" class="tab-pane" id="reports">
-                {{> apv_match}}
+                {{> admin/reports/index.html}}
+            </div>
+            <div role="tabpanel" class="tab-pane" id="report-editor">
+                {{> admin/report-editor/index.html}}
             </div>
         </div>
     </div>

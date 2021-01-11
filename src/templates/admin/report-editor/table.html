@@ -1,0 +1,36 @@
+<!-- ONLY CARD -->
+<style>
+    #modal_table td:last-child{
+        display: none;
+    }
+    
+    #modal_table th:last-child{
+        display: none
+    }
+</style>
+<div class="">
+    <div class="aravo">
+        <div class="table-responsive tableFixHead">
+            <table class="table table-striped" id="modal_table">
+                <thead>
+                    <tr>
+                    {{#data.headers}}
+                        <th style="background: lightgrey;">{{.}}</th>
+                    {{/data.headers}}
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#data.rows}}
+                        <tr onclick="toggle(this, 'yellow')">
+                            {{#.}}
+                            <td>
+                                {{{.}}}
+                            </td>
+                            {{/.}}
+                        </tr>
+                    {{/data.rows}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
