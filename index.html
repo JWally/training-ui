@@ -254,6 +254,22 @@
 
 
 		page();
+		
+		// ////////////////////////////////////////////////////////////////////////
+		// CHECK EVERY FEW MINUTES THAT USER IS VALID, OTHERWISE SEND THEM HOME
+		// ////////////////////////////////////////////////////////////////////////
+		setTimeout(function(){
+			$.get("/api/validate/status")
+			.done(function(d){
+				//
+				//
+				//
+				console.log("STATUS CHECK");
+				if(d.data["validation-status"] == "new" && page.current !== "/"){
+					page("/");
+				}
+			})
+		},1000 * 60);
 
 	</script>
 </html>
